@@ -1,11 +1,11 @@
 // defining SVG area dimensions
-var svgHeight = 1000;
-var svgWidth= 900;
+var svgHeight = 850;
+var svgWidth= 1000;
 // defining the margins 
 var margins = {
     top: 30,
     right: 30,
-    bottom: 30,
+    bottom: 40,
     left: 60
 };
 //defining dimensions of chart area
@@ -45,7 +45,7 @@ d3.csv("../data/data.csv").then(function(data){
         data.smokes = +data.smokes;
 
         
-
+        console.log(data.abbr)
     }) ;
     var pov = poverty.map((i)=>Number(i));
     var cigs = smokes.map((i)=>Number(i));
@@ -77,7 +77,7 @@ d3.csv("../data/data.csv").then(function(data){
 
   // Add leftAxis to the left side of the display
   chartGroup.append("g").call(yAxis);
-
+// create data point bubble 
   var circles = chartGroup.selectAll("dot")
   .data(data)
   .enter()
@@ -86,9 +86,53 @@ d3.csv("../data/data.csv").then(function(data){
   .attr("cx",d => xscale(d.smokes))
   .attr("cy",d => yscale(d.income))
   
-  .attr("r", "10")
+  .attr("r", "6")
   .attr("fill", "pink")
   .attr("opacity", ".6")
   
     ;
+// create state abbreviations in data point bubble 
+ chartGroup.append("g")
+ .selectAll("text")
+ .data(data)
+ .enter()
+ .append("text")
+ .attr("x", d => xscale(d.smokes) - 5)
+ .attr("y", d => yscale(d.income) + 2)
+ .style("font", "8px times")
+ .text( d => d.abbr);
+// create Axis labels 
+ chartGroup.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margins.left -3)
+    .attr("x", 0 - (chartHeight / 2))
+    .attr("dy", "1em")
+    .attr("class", "axisText")
+    .text("Income");
+
+ chartGroup.append("text")
+    .attr("transform", `translate(${chartWidth /2}, ${chartHeight + margins.top })`)
+    .attr("class", "axisText")
+    .text("Smoking rate");
+ // Step 1: Initialize Tooltip
+ var toolTip = d3.tip()
+ .attr("class", "d3-tip")
+ 
+ .html(function(d) {
+   
+   return (d.abbr);
+ });
+
+// Step 2: Create the tooltip in chartGroup.
+chartGroup.call(toolTip);
+
+// Step 3: Create "mouseover" event listener to display tooltip
+circles.on("mouseover", function(d) {
+ toolTip.show(d, this);
+ 
+});
+// Step 4: Create "mouseout" event listener to hide tooltip
+ circles.on("mouseout", function(d) {
+   toolTip.hide(d);
+ });
 });
